@@ -62,6 +62,9 @@ Texture2D desktopTex;
 Texture2D seagullFox;
 Texture2D seagullRecycle;
 Texture2D seagullTerm;
+Texture2D seagullMap;
+Texture2D terminalTex;
+Texture2D mapTex;
 Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
@@ -89,6 +92,9 @@ void update_active_typing_box() {
 	if (!activeTypingBox) {
 		return;
 	}
+	if (activeTypingBox->pos && IsKeyPressed(KEY_BACKSPACE)) {
+		activeTypingBox->data[--activeTypingBox->pos] = '\0';
+	}
 	char c;
 	while (activeTypingBox->pos < activeTypingBox->max && (c = GetCharPressed())) {
 		activeTypingBox->data[activeTypingBox->pos++] = c;
@@ -96,17 +102,40 @@ void update_active_typing_box() {
 	}
 }
 
+void do_desktop();
+
+bool termOpen;
+bool mapOpen;
+
 #include "context.h"
+#include "term.h"
+#include "map.h"
 
 void do_desktop() {
 	DrawTextureNPatch(desktopTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	float scale = 0.25F;
 	Rectangle recycleBox{ 0, 0, 256 * scale, 300 * scale };
-	Rectangle foxBox{ 0, 330 * scale, 256 * scale, 300 * scale };
-	Rectangle termBox{ 0, 660 * scale, 256 * scale, 300 * scale };
+	Rectangle foxBox{ 0, 330 * 1 * scale, 256 * scale, 300 * scale };
+	Rectangle termBox{ 0, 330 * 2 * scale, 256 * scale, 300 * scale };
+	Rectangle mapBox{ 260 * 10 * scale, 330 * 4 * scale, 256 * scale, 300 * scale};
 	DrawTextureEx(seagullRecycle, Vector2{recycleBox.x, recycleBox.y}, 0.0F, scale, CheckCollisionPointRec(mousePosition, recycleBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullFox, Vector2{ foxBox.x, foxBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, foxBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	DrawTextureEx(seagullMap, Vector2{ mapBox.x, mapBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, mapBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	if (!termOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, termBox)) {
+		open_terminal();
+		termOpen = true;
+	}
+	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, mapBox)) {
+		open_map();
+		mapOpen = true;
+	}
+	if (termOpen) {
+		do_terminal();
+	}
+	if (mapOpen) {
+		do_map();
+	}
 }
 
 //LOGIN SCREEN
@@ -125,15 +154,24 @@ void do_login() {
 		}
 		//button check
 		if (CheckCollisionPointRec(mousePosition, loginOK.rect)) {
-			if(strncmp(loginPass.data,"Cgull",5) == 0) //make sure there's a correct password
+			if (strncmp(loginPass.data, "Cgull", 5) == 0) { //make sure there's a correct password
 				currentScreen = do_desktop;
+				activeTypingBox = nullptr;
+			}
 		}
 	}
 	update_active_typing_box();
 	render_typing_box(loginUser);
 	render_typing_box(loginPass);
 	render_active_typing_box_cursor();
-	if (strncmp(loginPass.data, "Duck", TypingBox::cap) != 0) {
+	if (IsKeyPressed(KEY_TAB)) {
+		if (activeTypingBox == &loginUser) {
+			activeTypingBox = &loginPass;
+		} else if (activeTypingBox == &loginPass || activeTypingBox == nullptr) {
+			activeTypingBox = &loginUser;
+		}
+	}
+	if ((activeTypingBox == &loginUser || activeTypingBox == &loginPass) && IsKeyPressed(KEY_ENTER) && strncmp(loginPass.data, "Cgull", 5) == 0) {
 		currentScreen = do_desktop;
 		activeTypingBox = nullptr;
 	}
@@ -148,9 +186,13 @@ int main(void) {
 	seagullFox = LoadTexture("resources/seagullfox.png");
 	seagullRecycle = LoadTexture("resources/seagullrecycle.png");
 	seagullTerm = LoadTexture("resources/seagullterm.png");
+	seagullMap = LoadTexture("resources/seagullmap.png");
+	terminalTex = LoadTexture("resources/terminal.png");
+	mapTex = LoadTexture("resources/map.png");
 	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
 
 	SetTargetFPS(60);
+	SetExitKey(0);
 
 	while (!WindowShouldClose()) {
 		deltaTime = GetFrameTime();
