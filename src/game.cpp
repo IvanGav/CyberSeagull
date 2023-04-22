@@ -110,6 +110,7 @@ bool mapOpen;
 #include "context.h"
 #include "term.h"
 #include "map.h"
+#include "interpreter.h"
 
 void do_desktop() {
 	DrawTextureNPatch(desktopTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
@@ -136,6 +137,21 @@ void do_desktop() {
 	if (mapOpen) {
 		do_map();
 	}
+}
+
+//sample program
+const char* sampleS1 = 
+R"(ADD R0,R2
+hello:
+MOV R1,20
+JMP hello
+world:
+JZE world
+)";
+
+int main() {
+	auto a = compileProgram(sampleS1);
+	return 0;
 }
 
 //LOGIN SCREEN
@@ -177,7 +193,7 @@ void do_login() {
 	}
 }
 
-int main(void) {
+int mains(void) {
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
