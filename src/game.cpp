@@ -135,6 +135,7 @@ bool mapOpen;
 #include "map.h"
 #include "interpreter.h"
 
+bool userExit = false;
 void do_desktop() {
 	DrawTextureNPatch(desktopTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	float scale = 0.25F;
@@ -142,7 +143,7 @@ void do_desktop() {
 	Rectangle foxBox{ 0, 330 * 1 * scale, 256 * scale, 300 * scale };
 	Rectangle termBox{ 0, 330 * 2 * scale, 256 * scale, 300 * scale };
 	Rectangle mapBox{ 260 * 10 * scale, 330 * 4 * scale, 256 * scale, 300 * scale};
-	Rectangle leaveBox{ 260 * 10 * scale, 330 * 1 * scale, 256 * scale, 300 * scale };
+	Rectangle leaveBox{ 260 * 13.8 * scale, 330 * 0 * scale, 256 * scale, 300 * scale };
 	DrawTextureEx(seagullRecycle, Vector2{recycleBox.x, recycleBox.y}, 0.0F, scale, CheckCollisionPointRec(mousePosition, recycleBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullFox, Vector2{ foxBox.x, foxBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, foxBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
@@ -156,6 +157,9 @@ void do_desktop() {
 		open_map();
 		mapOpen = true;
 	}
+	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, leaveBox)) {
+		userExit = true;
+	}
 	if (termOpen) {
 		do_terminal();
 	}
@@ -164,7 +168,6 @@ void do_desktop() {
 	}
 }
 
-bool userExit = false;
 //LOGIN SCREEN
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
