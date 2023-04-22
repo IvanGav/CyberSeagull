@@ -73,6 +73,8 @@ Texture2D firewallTex;
 Texture2D firewallDeadTex;
 Texture2D routerTex;
 Texture2D seagullVirus;
+Texture2D todoList;
+Texture2D notepad;
 Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
@@ -115,11 +117,14 @@ void do_desktop();
 
 bool termOpen;
 bool mapOpen;
+bool todoListFirstOpen = false;
+bool todoListOpen = false;
 
 #include "network.h"
 #include "context.h"
 #include "term.h"
 #include "map.h"
+#include "todoList.h"
 
 void do_desktop() {
 	DrawTextureNPatch(desktopTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
@@ -128,10 +133,13 @@ void do_desktop() {
 	Rectangle foxBox{ 0, 330 * 1 * scale, 256 * scale, 300 * scale };
 	Rectangle termBox{ 0, 330 * 2 * scale, 256 * scale, 300 * scale };
 	Rectangle mapBox{ 260 * 10 * scale, 330 * 4 * scale, 256 * scale, 300 * scale};
+	Rectangle todoListBox{ 0, 330 * 3 * scale, 256 * scale, 300 * scale };
 	DrawTextureEx(seagullRecycle, Vector2{recycleBox.x, recycleBox.y}, 0.0F, scale, CheckCollisionPointRec(mousePosition, recycleBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullFox, Vector2{ foxBox.x, foxBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, foxBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullMap, Vector2{ mapBox.x, mapBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, mapBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	DrawTextureEx(notepad, Vector2{ todoListBox.x, todoListBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, todoListBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	
 	if (!termOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, termBox)) {
 		open_terminal();
 		termOpen = true;
@@ -146,6 +154,15 @@ void do_desktop() {
 	if (mapOpen) {
 		do_map();
 	}
+	if ((!todoListFirstOpen) || (!todoListOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, todoListBox))) {
+		open_todoList();
+		todoListOpen = true;
+		todoListFirstOpen = true;
+	}
+	if (todoListOpen) {
+		do_todoList();
+	}
+	
 }
 
 bool userExit = false;
@@ -209,6 +226,8 @@ int main(void) {
 	firewallDeadTex = LoadTexture("resources/deadfirewall.png");
 	routerTex = LoadTexture("resources/router.png");
 	seagullVirus = LoadTexture("resources/seagullvirus.png");
+	todoList = LoadTexture("resources/cyberseagtodo.png");
+	notepad = LoadTexture("resources/notepad.png");
 	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
 
 	SetTargetFPS(60);
