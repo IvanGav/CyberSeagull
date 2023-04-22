@@ -250,6 +250,7 @@ ADd R2,R2,R3
 
 jMP start
 end:
+RSH
 )";
 
 int main(void) {

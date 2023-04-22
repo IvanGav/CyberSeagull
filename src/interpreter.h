@@ -205,7 +205,8 @@ bool readInstruction(int instruction, const char*& cur,
 	std::unordered_map<std::string, std::vector<uint32_t>>& uninit_labels) {
 	uint32_t fullInstruction = instruction; //a "full" instruction with instruction, registers, etc
 	if (instruction == RSH) {
-		compiled.push_back(instruction);
+		compiled.push_back(fullInstruction);
+		skipToNext(cur);
 		return true;
 	}
 	if (instruction == FLY || instruction == NXT || instruction == INN ||
