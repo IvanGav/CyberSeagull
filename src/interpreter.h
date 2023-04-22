@@ -27,7 +27,7 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 	case SUB: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] - virus.registerFile[(data >> 16) & 7]; break;
 	case REM: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] % virus.registerFile[(data >> 16) & 7]; break;
 	case JMP: virus.instructionPointer = data; break;
-	case JZE: virus.instructionPointer = virus.registerFile[data & 7] ? data >> 8 : virus.instructionPointer; break;
+	case JZE: virus.instructionPointer = virus.registerFile[data & 7] ? virus.instructionPointer : data >> 8; break;
 	case CEQ: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] == virus.registerFile[(data >> 16) & 7]; break;
 	case CNE: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] != virus.registerFile[(data >> 16) & 7]; break;
 	case CGT: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] > virus.registerFile[(data >> 16) & 7]; break;
@@ -309,7 +309,7 @@ std::vector<uint32_t> compileProgram(const char* code) {
 		if (nextInstruction == -1) { //it's a label
 			std::string label = rangeToString(cur, next);
 			if (labels.find(label) == labels.end()) {
-				labels[label] = compiled.size() << 5;
+				labels[label] = compiled.size();
 				cur = next;
 			} else {
 				return std::vector<uint32_t>(); //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

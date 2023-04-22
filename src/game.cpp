@@ -206,21 +206,44 @@ void do_login() {
 	}
 }
 
+//int main() {
+//	auto a = compileProgram(addOneS);
+//	for (uint32_t i : a) {
+//		int op = i & 0xFF;
+//		int arg1 = (i & 0xFF00) >> 8;
+//		int arg2 = (i & 0xFF0000) >> 16;
+//		int arg3 = (i & 0xFF000000) >> 24;
+//		op = op;
+//	}
+//	return 0;
+//}
+
 const char* compile = R"(
-MOV R0, 400
-MOV R5, 100
+MOV R0, 10
+MOV R1, 0
+MOV R2, 1
+MOV R3, 1
+start:
+CNE R4,R0,R2
+JZE R4, end
+
+ADD R1,R1,R2
+ADD R2,R2,R3
+
+JMP start
+end:
 )";
 
 int main(void) {
 	// Compiler test
-	/*seagullVirus virus{};
+	SeagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
 	virus.active = true;
 	NetNode node{ NET_NODE_TYPE_SERVER };
 	while (virus.active) {
 		interpret_next(virus, &node);
 	}
-	return 0;*/
+	return 0;
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
