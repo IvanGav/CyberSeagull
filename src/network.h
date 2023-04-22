@@ -106,8 +106,10 @@ void build_network_graph() {
 	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1800, 0 });
 	netNodes.push_back({ NET_NODE_TYPE_IDEA_SERVER, 2000, 0 });
 
-	add_network_file(1, "README", "password");
-	add_network_file(3, "IDEA", "Make an idea game!");
+	
+	add_network_file(1, "README", "Man, as an IT guy, remembering how to get past these \nfirewalls is hard, good thing I made this file \nto remind me that I just have to add one.");
+	add_network_file(3, "README", "My memory is so bad, this next one has to do with \nmultiples, printing 1, 8, and 9");
+	add_network_file(4, "README", "I'll write the factors in here for more security, \nevery multiple of 3 returns 1, multiple of 5 returns 8, \nand both returns 9!");
 
 	connect_nodes(0, 1, 5);
 	connect_nodes(1, 2, 50);
