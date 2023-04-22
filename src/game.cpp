@@ -39,7 +39,7 @@ int main(void) {
         BeginDrawing();
         
         ClearBackground(RAYWHITE);
-        DrawText("Seagulls.", 190, 200, 20, Color{ 0, 0, 0, 255 });
+        DrawText("More Seagulls.", 190, 200, 20, Color{ 0, 0, 0, 255 });
 
         EndDrawing();
     }
