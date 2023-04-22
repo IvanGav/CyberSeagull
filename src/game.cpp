@@ -57,7 +57,7 @@ struct Button {
 Texture2D loginTex;
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 TypingBox loginPass{ Rectangle{ 724 / 2, 590 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
-Button loginOK{ Rectangle{ 400, 300, 100, 100 } };
+Button loginOK{ Rectangle{ 714 / 2, 718 / 2, 162 / 2, 42 / 2 } };
 
 float activeTypingBlinkTime;
 TypingBox* activeTypingBox;
@@ -107,7 +107,7 @@ void do_login() {
 		}
 		//button check
 		if (CheckCollisionPointRec(mousePosition, loginOK.rect)) {
-			if(strncmp(loginPass.data,"Cgull",5)) //make sure there's a correct password
+			if(strncmp(loginPass.data,"Cgull",5) == 0) //make sure there's a correct password
 				currentScreen = do_desktop;
 		}
 	}
@@ -115,7 +115,7 @@ void do_login() {
 	render_typing_box(loginUser);
 	render_typing_box(loginPass);
 	render_active_typing_box_cursor();
-	DrawRectangleRec(loginOK.rect,BLACK);
+	//DrawRectangleRec(loginOK.rect,BLACK); //draw black on button
 }
 
 int main(void) {
