@@ -40,7 +40,9 @@ bool compare(const char* start, const char* end, std::string str) {
 int getRegister(const char* start, const char* end) {
 	if (end - start != 2) return -1;
 	if (*start != 'R') return -1;
-	return *(start + 1) - '0';
+	int rid = *(start + 1) - '0';
+	if (rid > 7 || rid < 0) return -1;
+	return rid;
 }
 
 //get next token and put into 'buffer'
@@ -93,8 +95,8 @@ void createAndPush(int index, std::string labelName, std::unordered_map<std::str
 	uninit_labels[labelName].push_back(index);
 }
 
-//given a just read instruction, read all of its inputs
-void readInstruction(int instruction, const char*& cur, 
+//given a just read instruction, read all of its inputs; return flase if there's an error occured
+bool readInstruction(int instruction, const char*& cur, 
 	std::vector<uint32_t>& compiled, 
 	std::unordered_map<std::string, uint32_t>& labels,
 	std::unordered_map<std::string, std::vector<uint32_t>>& uninit_labels) {
@@ -109,6 +111,7 @@ void readInstruction(int instruction, const char*& cur,
 		skipToNext(cur);
 		const char* next = nextArg(cur);
 		int reg = getRegister(cur, next);
+		if (reg == -1) return false;
 		cur = next;
 		fullInstruction |= (reg << 8);
 	} else if (instruction == JMP) {
@@ -128,6 +131,7 @@ void readInstruction(int instruction, const char*& cur,
 		skipToNext(cur);
 		const char* next = nextArg(cur);
 		int reg = getRegister(cur, next);
+		if (reg == -1) return false;
 		cur = next;
 		fullInstruction |= (reg << 8);
 		//label
@@ -147,6 +151,7 @@ void readInstruction(int instruction, const char*& cur,
 		skipToNext(cur);
 		const char* next = nextArg(cur);
 		int reg = getRegister(cur, next);
+		if (reg == -1) return false;
 		cur = next;
 		fullInstruction |= (reg << 8);
 		//push back a number
@@ -165,21 +170,25 @@ void readInstruction(int instruction, const char*& cur,
 		skipToNext(cur);
 		const char* next = nextArg(cur);
 		int reg = getRegister(cur, next);
+		if (reg == -1) return false;
 		cur = next;
 		fullInstruction |= (reg << 8);
 		skipToNext(cur);
 		next = nextArg(cur);
 		reg = getRegister(cur, next);
+		if (reg == -1) return false;
 		cur = next;
 		fullInstruction |= (reg << 16);
 		skipToNext(cur);
 		next = nextArg(cur);
 		reg = getRegister(cur, next);
+		if (reg == -1) return false;
 		cur = next;
 		fullInstruction |= (reg << 24);
 	}
 	skipToNext(cur);
 	compiled.push_back(fullInstruction);
+	return true;
 }
 
 //first 8 bytes (int & 0xFF) is a command (unless immediate for MOV), next bytes (int & 0xFF00; 0xFF0000; 0xFF000000) are params
@@ -197,23 +206,27 @@ std::vector<uint32_t> compileProgram(const char* code) {
 		if (nextInstruction == -1) { //it's a label
 			std::string label = rangeToString(cur, next);
 			if (labels.find(label) == labels.end()) {
-				labels[label] = cur - code;
+				labels[label] = compiled.size() << 5;
 				cur = next;
 			} else {
 				return std::vector<uint32_t>(); //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			}
 		} else {
 			cur = next;
-			readInstruction(nextInstruction, cur, compiled, labels, uninit_labels);
+			bool noError = readInstruction(nextInstruction, cur, compiled, labels, uninit_labels);
+			if(!noError) return std::vector<uint32_t>(); //AAAAA
 		}
 	}
 	for (std::pair<std::string, std::vector<uint32_t>> vec : uninit_labels) {
-		int labelNum = labels[vec.first];
-		if (labelNum == 0) {
-			return std::vector<uint32_t>(); //AAAAAAAAAAAAAAAAAAAAA and not 0, but whatever the default is
+		if (labels.find(vec.first) == labels.end()) {
+			return std::vector<uint32_t>(); //AAAAAAAAAAAAAAAAAAAAA
 		}
+		int jumpTo = labels[vec.first];
 		for (uint32_t i : vec.second) {
-			compiled[i] = labelNum;
+			if((compiled[i] & 0xFF) == 3) //it it's a regular jump, not conditional
+				compiled[i] |= (jumpTo << 8);
+			else
+				compiled[i] |= (jumpTo << 16);
 		}
 	}
 	return compiled;
