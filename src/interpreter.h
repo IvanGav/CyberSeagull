@@ -136,14 +136,14 @@ std::string rangeToString(const char* start, const char* end) {
 bool compare(const char* start, const char* end, std::string str) {
 	if (end - start != str.size()) return false;
 	for (int i = 0; i < str.size(); i++)
-		if (str[i] != *(start + i)) return false;
+		if (str[i] != toupper(*(start + i))) return false;
 	return true;
 }
 
 //return a number of the next register given a range (-1 if invalid)
 int getRegister(const char* start, const char* end) {
 	if (end - start != 2) return -1;
-	if (*start != 'R') return -1;
+	if (*start != 'R' && *start != 'r') return -1;
 	int rid = *(start + 1) - '0';
 	if (rid > 7 || rid < 0) return -1;
 	return rid;
@@ -206,7 +206,6 @@ bool readInstruction(int instruction, const char*& cur,
 	std::unordered_map<std::string, std::vector<uint32_t>>& uninit_labels) {
 	uint32_t fullInstruction = instruction; //a "full" instruction with instruction, registers, etc
 	if (instruction == RSH) {
-		skipToNext(cur);
 		compiled.push_back(fullInstruction);
 		skipToNext(cur);
 		return true;

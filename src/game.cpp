@@ -241,19 +241,20 @@ void do_login() {
 //}
 
 const char* compile = R"(
-MOV R0, 10
-MOV R1, 0
+MoV r0, 10
+MOv R1, 0
 MOV R2, 1
-MOV R3, 1
+MOV r3, 1
 start:
 CNE R4,R0,R2
 JZE R4, end
 
-ADD R1,R1,R2
-ADD R2,R2,R3
+Add R1,R1,R2
+ADd R2,R2,R3
 
-JMP start
+jMP start
 end:
+RSH
 )";
 
 int main(void) {
@@ -296,6 +297,10 @@ int main(void) {
 	homeNode = &netNodes[0];
 	homeNode->compromised = true;
 	currentConnectedNode = homeNode;
+
+	InitAudioDevice();
+	Sound fxWav = LoadSound("resources/startupSound.mp3");
+	PlaySound(fxWav);
 
 	tickCountdown = tickrate;
 
