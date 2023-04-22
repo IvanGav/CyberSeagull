@@ -5,5 +5,5 @@
 #include <iostream>
 
 //MAIN DESKTOP SCREEN
-void do_desktop() {
+void funct() {
 }
