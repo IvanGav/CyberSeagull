@@ -3,12 +3,14 @@
 
 std::vector<TermLine> fileLines;
 
+std::string editorFileName;
 float editorTime;
 uint32_t lineOffset;
 uint32_t cursorX;
 uint32_t cursorY;
 
-void open_editor(const char* file) {
+void open_editor(std::string name, const char* file) {
+	fileLines.clear();
 	while (*file != '\0') {
 		fileLines.push_back({});
 		uint32_t size = 0;
@@ -17,6 +19,9 @@ void open_editor(const char* file) {
 				fileLines.back().l[size++] = *file;
 			}
 			file++;
+		}
+		if (*file == '\0') {
+			break;
 		}
 		file++;
 	}
@@ -28,9 +33,22 @@ void open_editor(const char* file) {
 	cursorX = 0;
 	cursorY = 0;
 	editorMode = true;
+	editorFileName = name;
 }
 
-void serialize_edited_file(std::vector<char>& file) {
+void serialize_edited_file(NetNode* node) {
+	std::vector<char>* vec = nullptr;
+	for (File& file : node->files) {
+		if (file.name == editorFileName) {
+			vec = &file.data;
+			break;
+		}
+	}
+	if (vec == nullptr) {
+		node->files.push_back(File{ editorFileName });
+		vec = &node->files.back().data;
+	}
+	std::vector<char>& file = *vec;
 	file.clear();
 	for (TermLine& line : fileLines) {
 		for (uint32_t i = 0; line.l[i] != '\0'; i++) {
@@ -118,7 +136,7 @@ void do_editor() {
 		}
 		if (IsKeyPressed(KEY_ESCAPE)) {
 			std::vector<char> vec;
-			serialize_edited_file(vec);
+			serialize_edited_file(currentConnectedNode);
 			editorMode = false;
 		}
 	}

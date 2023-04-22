@@ -28,7 +28,7 @@ void render_nodes() {
 		case NET_NODE_TYPE_ROUTER: texture = routerTex; break;
 		case NET_NODE_TYPE_FIREWALL: texture = node.firewallDown ? firewallDeadTex : firewallTex; break;
 		}
-		DrawTextureNPatch(texture, NPatchInfo{ Rectangle{ 0, 0, 64, 64 } }, Rectangle{ (node.x - halfwidth) * mapScale + mapX, (node.y - halfheight) * mapScale + mapY, (halfwidth * 2) * mapScale, (halfheight * 2) * mapScale }, Vector2{}, 0.0F, WHITE);
+		DrawTextureNPatch(texture, NPatchInfo{ Rectangle{ 0, 0, float(texture.width), float(texture.height) } }, Rectangle{ (node.x - halfwidth) * mapScale + mapX, (node.y - halfheight) * mapScale + mapY, (halfwidth * 2) * mapScale, (halfheight * 2) * mapScale }, Vector2{}, 0.0F, WHITE);
 	}
 }
 

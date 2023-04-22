@@ -41,7 +41,33 @@ struct NetNode {
 
 	std::vector<File> files;
 	std::vector<PortConnection> outboundPorts;
-	
+	SeagullVirus virus;
+
+	bool fizzBuzz(int i) {
+		bool val = false;
+		if (challengeData % 3 && challengeData % 5)
+			val = (i == 9);
+		else if (challengeData % 3)
+			val = (i == 1);
+		else if (challengeData % 5)
+			val = (i == 8);
+		else
+			val = (i == challengeData);
+		challengeData++;
+		return val;
+	}
+
+	bool addOne(int i) {
+		return (i == (challengeData + 1));
+	}
+
+	bool search(int i) {
+		return (i == challengeData);
+	}
+
+	bool hex2Dec(int i) {
+		return (i == challengeData);
+	}
 };
 
 std::vector<NetNode> netNodes;
@@ -60,6 +86,8 @@ void connect_nodes(uint32_t nodeA, uint32_t nodeB, uint32_t port) {
 	netNodes[nodeA].outboundPorts.push_back(PortConnection{ &netNodes[nodeB], port });
 }
 
+
+
 void build_network_graph() {
 	netNodes.push_back({ NET_NODE_TYPE_HOME_SERVER, 0, 0 });
 	netNodes.push_back({ NET_NODE_TYPE_SERVER, 200, 0 });
@@ -72,7 +100,7 @@ void build_network_graph() {
 	netNodes.push_back({ NET_NODE_TYPE_FIREWALL, 1200, 0, FIREWALL_CHALLENGE_NODE_SEARCH });
 	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1400, 0 });
 	netNodes.push_back({ NET_NODE_TYPE_ROUTER, 1500, 100 });
-	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1400, 200 });
+	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1450, 200 });
 	netNodes.push_back({ NET_NODE_TYPE_FIREWALL, 1600, 0, FIREWALL_CHALLENGE_NODE_AND_HEX2DEC });
 	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1800, 0 });
 	netNodes.push_back({ NET_NODE_TYPE_IDEA_SERVER, 2000, 0 });

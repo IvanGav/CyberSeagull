@@ -24,6 +24,7 @@
 #include "raylib.h"
 #include <stdint.h>
 #include <iostream>
+#include <vector>
 #ifdef _WIN32
 #pragma comment(lib, "winmm.lib")
 #endif
@@ -46,6 +47,17 @@ Vector2 deltaMouse;
 //holds a screen to render
 void (*currentScreen)(void);
 
+struct SeagullVirus {
+	constexpr static uint32_t stackSize = 64;
+	uint32_t registerFile[8];
+	uint32_t stack[stackSize];
+	uint32_t stackPointer = 0;
+	std::vector<uint32_t> instructionStream;
+	uint32_t instructionPointer;
+	bool active;
+	bool rshRequested;
+};
+
 struct TypingBox {
 	static constexpr uint32_t cap = 31;
 	Rectangle rect;
@@ -64,6 +76,7 @@ Texture2D seagullFox;
 Texture2D seagullRecycle;
 Texture2D seagullTerm;
 Texture2D seagullMap;
+Texture2D seagullLeave;
 Texture2D terminalTex;
 Texture2D mapTex;
 Texture2D serverGeneric;
@@ -124,8 +137,10 @@ bool todoListOpen = false;
 #include "context.h"
 #include "term.h"
 #include "map.h"
+#include "interpreter.h"
 #include "todoList.h"
 
+bool userExit = false;
 void do_desktop() {
 	DrawTextureNPatch(desktopTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	float scale = 0.25F;
@@ -133,13 +148,14 @@ void do_desktop() {
 	Rectangle foxBox{ 0, 330 * 1 * scale, 256 * scale, 300 * scale };
 	Rectangle termBox{ 0, 330 * 2 * scale, 256 * scale, 300 * scale };
 	Rectangle mapBox{ 260 * 10 * scale, 330 * 4 * scale, 256 * scale, 300 * scale};
+	Rectangle leaveBox{ 260 * 13.8 * scale, 330 * 0 * scale, 256 * scale, 300 * scale };
 	Rectangle todoListBox{ 0, 330 * 3 * scale, 256 * scale, 300 * scale };
 	DrawTextureEx(seagullRecycle, Vector2{recycleBox.x, recycleBox.y}, 0.0F, scale, CheckCollisionPointRec(mousePosition, recycleBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullFox, Vector2{ foxBox.x, foxBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, foxBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullMap, Vector2{ mapBox.x, mapBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, mapBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	DrawTextureEx(seagullLeave, Vector2{ leaveBox.x, leaveBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, leaveBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(notepad, Vector2{ todoListBox.x, todoListBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, todoListBox) ? WHITE : Color{ 220, 220, 220, 255 });
-	
 	if (!termOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, termBox)) {
 		open_terminal();
 		termOpen = true;
@@ -147,6 +163,9 @@ void do_desktop() {
 	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, mapBox)) {
 		open_map();
 		mapOpen = true;
+	}
+	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, leaveBox)) {
+		userExit = true;
 	}
 	if (termOpen) {
 		do_terminal();
@@ -162,10 +181,8 @@ void do_desktop() {
 	if (todoListOpen) {
 		do_todoList();
 	}
-	
 }
 
-bool userExit = false;
 //LOGIN SCREEN
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
@@ -207,7 +224,21 @@ void do_login() {
 	}
 }
 
+const char* compile = R"(
+MOV R0, 400
+MOV R5, 100
+)";
+
 int main(void) {
+	// Compiler test
+	/*seagullVirus virus{};
+	virus.instructionStream = compileProgram(compile);
+	virus.active = true;
+	NetNode node{ NET_NODE_TYPE_SERVER };
+	while (virus.active) {
+		interpret_next(virus, &node);
+	}
+	return 0;*/
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
@@ -217,6 +248,7 @@ int main(void) {
 	seagullRecycle = LoadTexture("resources/seagullrecycle.png");
 	seagullTerm = LoadTexture("resources/seagullterm.png");
 	seagullMap = LoadTexture("resources/seagullmap.png");
+	seagullLeave = LoadTexture("resources/seagullleave.png");
 	terminalTex = LoadTexture("resources/terminal.png");
 	mapTex = LoadTexture("resources/map.png");
 	serverGeneric = LoadTexture("resources/server.png");
@@ -234,6 +266,8 @@ int main(void) {
 	SetExitKey(0);
 
 	build_network_graph();
+	homeNode = &netNodes[0];
+	currentConnectedNode = homeNode;
 
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
@@ -248,5 +282,5 @@ int main(void) {
 		EndDrawing();
 	}
 	CloseWindow();
-	return 0;
+	return EXIT_SUCCESS;
 }
