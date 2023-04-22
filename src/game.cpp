@@ -293,9 +293,9 @@ int main(void) {
 	homeNode = &netNodes[0];
 	currentConnectedNode = homeNode;
 
-	//InitAudioDevice();
-	//Sound fxWav = LoadSound("resources/soundwav.wav");
-	//PlaySound(fxWav);
+	InitAudioDevice();
+	Sound fxWav = LoadSound("resources/startupSound.mp3");
+	PlaySound(fxWav);
 
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
