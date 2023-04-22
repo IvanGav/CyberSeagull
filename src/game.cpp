@@ -23,6 +23,7 @@
 
 #include "raylib.h"
 #include <stdint.h>
+#include <iostream>
 #ifdef _WIN32
 #pragma comment(lib, "winmm.lib")
 #endif
@@ -36,20 +37,66 @@ void DrawRectangleNorm(float x, float y, float width, float height, Color color)
 	DrawRectangle(x * screenWidthf, y * screenHeightf, width * screenWidthf, height * screenHeightf, color);
 }
 
+float deltaTime;
+Vector2 mousePosition;
 
 struct TypingBox {
 	static constexpr uint32_t cap = 31;
-	char data[cap + 1];
+	Rectangle rect;
+	uint32_t max;
 	uint32_t pos;
+	char data[cap + 1];
 };
 
 Texture2D loginTex;
-TypingBox loginUser;
-TypingBox loginPass;
+TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
+TypingBox loginPass{ Rectangle{ 724 / 2, 590 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
+
+float activeTypingBlinkTime;
+TypingBox* activeTypingBox;
+
+void render_typing_box(TypingBox& box) {
+	DrawText(box.data, box.rect.x + 3, box.rect.y + 3, box.rect.height - 5, BLACK);
+}
+
+void render_active_typing_box_cursor() {
+	if (!activeTypingBox) {
+		return;
+	}
+	if ((uint32_t(activeTypingBlinkTime * 4) & 1) == 0) {
+		int32_t len = MeasureText(activeTypingBox->data, activeTypingBox->rect.height - 5);
+		DrawText("_", activeTypingBox->rect.x + 3 + len, activeTypingBox->rect.y + 3, activeTypingBox->rect.height - 5, BLACK);
+	}
+}
+
+void update_active_typing_box() {
+	if (!activeTypingBox) {
+		return;
+	}
+	char c;
+	while (activeTypingBox->pos < activeTypingBox->max && (c = GetCharPressed())) {
+		activeTypingBox->data[activeTypingBox->pos++] = c;
+		activeTypingBox->data[activeTypingBox->pos] = '\0';
+	}
+}
 
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
-	DrawRectangleNorm(0.3F, 0.4F, 0.1F, 0.1F, BLACK);
+	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+		if (CheckCollisionPointRec(mousePosition, loginUser.rect)) {
+			activeTypingBox = &loginUser;
+			activeTypingBlinkTime = 0;
+		} else if (CheckCollisionPointRec(mousePosition, loginPass.rect)) {
+			activeTypingBox = &loginPass;
+			activeTypingBlinkTime = 0;
+		} else {
+			activeTypingBox = nullptr;
+		}
+	}
+	update_active_typing_box();
+	render_typing_box(loginUser);
+	render_typing_box(loginPass);
+	render_active_typing_box_cursor();
 }
 
 int main(void) {
@@ -62,11 +109,13 @@ int main(void) {
 	void (*currentScreen)(void) = do_login;
 
 	while (!WindowShouldClose()) {
+		deltaTime = GetFrameTime();
+		mousePosition = GetMousePosition();
+		activeTypingBlinkTime += deltaTime;
 		BeginDrawing();
 		
 		ClearBackground(RAYWHITE);
 		currentScreen();
-		//DrawText("More Seagulls.", 190, 200, 12, Color{ 0, 0, 0, 255 });
 
 		EndDrawing();
 	}
