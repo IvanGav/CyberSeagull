@@ -50,12 +50,12 @@ struct TypingBox {
 
 struct Button {
 	Rectangle rect;
-	uint8_t state; //
 };
 
 Texture2D loginTex;
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 TypingBox loginPass{ Rectangle{ 724 / 2, 590 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
+Button loginOK{ Rectangle{ 400, 300, 100, 100 } };
 
 float activeTypingBlinkTime;
 TypingBox* activeTypingBox;
@@ -85,11 +85,14 @@ void update_active_typing_box() {
 	}
 }
 
+//holds a screen to render
+void (*currentScreen)(void) = do_login;
 #include "context.h"
 
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+		//typing box
 		if (CheckCollisionPointRec(mousePosition, loginUser.rect)) {
 			activeTypingBox = &loginUser;
 			activeTypingBlinkTime = 0;
@@ -99,15 +102,16 @@ void do_login() {
 		} else {
 			activeTypingBox = nullptr;
 		}
-
+		//button check
+		if (CheckCollisionPointRec(mousePosition, loginOK.rect)) {
+			currentScreen = do_login;
+		}
 	}
 	update_active_typing_box();
 	render_typing_box(loginUser);
 	render_typing_box(loginPass);
 	render_active_typing_box_cursor();
 }
-
-void (*currentScreen)(void) = do_login;
 
 int main(void) {
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
