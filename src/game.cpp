@@ -207,18 +207,20 @@ void do_login() {
 }
 
 const char* compile = R"(
-mov r0, 400
-mov r5
+MOV R0, 400
+MOV R5, 100
 )";
 
 int main(void) {
-	SeagullVirus virus{};
+	// Compiler test
+	/*seagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
 	virus.active = true;
+	NetNode node{ NET_NODE_TYPE_SERVER };
 	while (virus.active) {
-		interpret_next(virus);
+		interpret_next(virus, &node);
 	}
-	return 0;
+	return 0;*/
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));

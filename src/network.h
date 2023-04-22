@@ -44,12 +44,17 @@ struct NetNode {
 	SeagullVirus virus;
 
 	bool fizzBuzz(int i) {
+		bool val = false;
 		if (challengeData % 3 && challengeData % 5)
-			return (i == 9);
-		if (challengeData % 3)
-			return (i == 1);
-		if (challengeData % 5)
-			return (i == 8);
+			val = (i == 9);
+		else if (challengeData % 3)
+			val = (i == 1);
+		else if (challengeData % 5)
+			val = (i == 8);
+		else
+			val = (i == challengeData);
+		challengeData++;
+		return val;
 	}
 
 	bool addOne(int i) {
