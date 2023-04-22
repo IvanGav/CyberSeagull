@@ -41,7 +41,7 @@ struct NetNode {
 
 	std::vector<File> files;
 	std::vector<PortConnection> outboundPorts;
-	
+	SeagullVirus virus;
 };
 
 std::vector<NetNode> netNodes;

@@ -11,6 +11,101 @@ enum Instruction {
 	ADD,SUB,REM,JMP,JZE,CEQ,CNE,CGT,CGE,CLT,CLE,MOV,AND,ORR,XOR,FLY,NXT,RSH,INN,OUT,PSH,POP
 };
 
+void interpret_next(SeagullVirus& virus, NetNode* node) {
+	if (!virus.active || virus.rshRequested) {
+		return;
+	}
+	uint32_t data = virus.instructionStream[virus.instructionPointer++];
+	Instruction op = static_cast<Instruction>(data & 0xFF);
+	data >>= 8;
+	if (op == MOV && virus.instructionPointer >= virus.instructionStream.size()) {
+		virus.active = false;
+		return;
+	}
+	switch (op) {
+	case ADD: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] + virus.registerFile[(data >> 16) & 7]; break;
+	case SUB: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] - virus.registerFile[(data >> 16) & 7]; break;
+	case REM: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] % virus.registerFile[(data >> 16) & 7]; break;
+	case JMP: virus.instructionPointer = data; break;
+	case JZE: virus.instructionPointer = virus.registerFile[data & 7] ? data >> 8 : virus.instructionPointer; break;
+	case CEQ: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] == virus.registerFile[(data >> 16) & 7]; break;
+	case CNE: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] != virus.registerFile[(data >> 16) & 7]; break;
+	case CGT: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] > virus.registerFile[(data >> 16) & 7]; break;
+	case CGE: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] >= virus.registerFile[(data >> 16) & 7]; break;
+	case CLT: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] < virus.registerFile[(data >> 16) & 7]; break;
+	case CLE: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] <= virus.registerFile[(data >> 16) & 7]; break;
+	case MOV: virus.registerFile[data & 7] = virus.instructionStream[virus.instructionPointer++]; break;
+	case AND: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] & virus.registerFile[(data >> 16) & 7]; break;
+	case ORR: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] | virus.registerFile[(data >> 16) & 7]; break;
+	case XOR: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] ^ virus.registerFile[(data >> 16) & 7]; break;
+	case FLY:
+	{
+		uint32_t port = data;
+		for (PortConnection& con : node->outboundPorts) {
+			if (con.port == port && !con.dst->virus.active && (node->type != NET_NODE_TYPE_FIREWALL || node->firewallDown == true)) {
+				con.dst->virus = virus;
+				node->virus.active = false;
+				break;
+			}
+		}
+		break;
+	}
+	case NXT:
+		virus.registerFile[0] = node->outboundPorts[virus.registerFile[data & 7] % node->outboundPorts.size()].port;
+		if (virus.registerFile[1] == node->outboundPorts.size()) {
+			virus.registerFile[1] = 0xFFFFFFFF;
+		} else {
+			virus.registerFile[1]++;
+		}
+		break;
+	case RSH:
+		rshConnectQueue.push_back(node);
+		virus.rshRequested = true;
+		break;
+	case INN:
+		if (node->type != NET_NODE_TYPE_FIREWALL) {
+			virus.registerFile[data & 7] = 0;
+			break;
+		}
+		switch (node->challengeType) {
+		case FIREWALL_CHALLENGE_ADD_ONE:
+		case FIREWALL_CHALLENGE_FIZZBUZZ:
+		case FIREWALL_CHALLENGE_NODE_SEARCH:
+		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC:
+		}
+		break;
+	case OUT:
+		if (node->type != NET_NODE_TYPE_FIREWALL) {
+			break;
+		}
+		switch (node->challengeType) {
+		case FIREWALL_CHALLENGE_ADD_ONE:
+		case FIREWALL_CHALLENGE_FIZZBUZZ:
+		case FIREWALL_CHALLENGE_NODE_SEARCH:
+		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC:
+		}
+		break;
+	case PSH:
+		if (virus.stackPointer >= SeagullVirus::stackSize) {
+			virus.active = false;
+			return;
+		}
+		virus.stack[virus.stackPointer++] = virus.registerFile[data & 7];
+		break;
+	case POP:
+		if (virus.stackPointer == 0) {
+			virus.active = false;
+			return;
+		}
+		virus.registerFile[data & 7] = virus.stack[--virus.stackPointer];
+		break;
+	default: virus.active = false; break;
+	}
+	if (virus.instructionPointer >= virus.instructionStream.size()) {
+		virus.active = false;
+	}
+}
+
 //skip to next non space character (or :)
 void skipToNext(const char*& cur) {
 	while (*cur == '\n' || *cur == ' ' || *cur == ':' || *cur == ',') {

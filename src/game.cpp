@@ -24,6 +24,7 @@
 #include "raylib.h"
 #include <stdint.h>
 #include <iostream>
+#include <vector>
 #ifdef _WIN32
 #pragma comment(lib, "winmm.lib")
 #endif
@@ -45,6 +46,17 @@ Vector2 deltaMouse;
 
 //holds a screen to render
 void (*currentScreen)(void);
+
+struct SeagullVirus {
+	constexpr static uint32_t stackSize = 64;
+	uint32_t registerFile[8];
+	uint32_t stack[stackSize];
+	uint32_t stackPointer = 0;
+	std::vector<uint32_t> instructionStream;
+	uint32_t instructionPointer;
+	bool active;
+	bool rshRequested;
+};
 
 struct TypingBox {
 	static constexpr uint32_t cap = 31;
@@ -191,7 +203,19 @@ void do_login() {
 	}
 }
 
+const char* compile = R"(
+mov r0, 400
+mov r5
+)";
+
 int main(void) {
+	SeagullVirus virus{};
+	virus.instructionStream = compileProgram(compile);
+	virus.active = true;
+	while (virus.active) {
+		interpret_next(virus);
+	}
+	return 0;
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
@@ -232,5 +256,5 @@ int main(void) {
 		EndDrawing();
 	}
 	CloseWindow();
-	return 0;
+	return EXIT_SUCCESS;
 }
