@@ -106,6 +106,8 @@ void build_network_graph() {
 	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1800, 0 });
 	netNodes.push_back({ NET_NODE_TYPE_IDEA_SERVER, 2000, 0 });
 
+	add_network_file(0, "ShCommands", "vim <file>\nls\ncat <file>\nfly <file> - lauch a seagull\nnmap - list all connections\ntaskkill - kill all seagulls\nrsh - remote shell");
+	add_network_file(0, "README", "If I want to get to the idea server in any\n reasonable time, I need to start now. Luckily,\n there's a server nearby unprotected by a firewall.");
 	add_network_file(1, "README", "password");
 	add_network_file(3, "IDEA", "Make an idea game!");
 
