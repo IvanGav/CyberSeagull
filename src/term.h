@@ -72,13 +72,15 @@ void do_terminal() {
 			push_terminal_line();
 			memcpy(&terminalLines.back().l[0], termCommand.l, termCmdSize);
 
+			uint32_t cmdOffset = isReverseShell ? 2 : 1;
+
 			// Process command
-			uint32_t cmdLen = strlen(termCommand.l + 1);
-			if (strncmp(termCommand.l + 1, "cat", 3) == 0) {
+			uint32_t cmdLen = strlen(termCommand.l + cmdOffset);
+			if (strncmp(termCommand.l + cmdOffset, "cat", 3) == 0) {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
-					std::string name{ termCommand.l + 5 };
+					std::string name{ termCommand.l + 4 + cmdOffset };
 					for (File& file : currentConnectedNode->files) {
 						if (file.name == name) {
 							char* ptr = file.data.data();
@@ -100,13 +102,13 @@ void do_terminal() {
 						}
 					}
 				}
-			} else if (strncmp(termCommand.l + 1, "ls", 2) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "ls", 2) == 0) {
 				if (currentConnectedNode) {
 					for (File& file : currentConnectedNode->files) {
 						write_terminal_line(file.name.c_str());
 					}
 				}
-			} else if (strncmp(termCommand.l + 1, "rsh", 3) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "rsh", 3) == 0) {
 				if (isReverseShell) {
 					isReverseShell = false;
 					currentConnectedNode->virus.rshRequested = false;
@@ -120,11 +122,11 @@ void do_terminal() {
 					rshConnectQueue.pop_back();
 					isReverseShell = true;
 				}
-			} else if (strncmp(termCommand.l + 1, "vim", 3) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "vim", 3) == 0) {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
-					std::string name{ termCommand.l + 5 };
+					std::string name{ termCommand.l + 4 + cmdOffset };
 					const char* fileData = "";
 					for (File& file : currentConnectedNode->files) {
 						if (file.name == name) {
@@ -134,14 +136,14 @@ void do_terminal() {
 					}
 					open_editor(name, fileData);
 				}
-			} else if (strncmp(termCommand.l + 1, "fly", 3) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "fly", 3) == 0) {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
 					if (currentConnectedNode->virus.active) {
 						write_terminal_line("\tVirus already active on this machine!");
 					} else {
-						std::string name{ termCommand.l + 5 };
+						std::string name{ termCommand.l + 4 + cmdOffset };
 						const char* fileData = nullptr;
 						for (File& file : currentConnectedNode->files) {
 							if (file.name == name) {
@@ -164,7 +166,7 @@ void do_terminal() {
 					}
 
 				}
-			} else if (strncmp(termCommand.l + 1, "quit", 4) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "quit", 4) == 0) {
 				if (isReverseShell) {
 					isReverseShell = false;
 					currentConnectedNode->virus.rshRequested = false;
@@ -173,9 +175,9 @@ void do_terminal() {
 				} else {
 					write_terminal_line("\tNo reverse shell active");
 				}
-			} else if (strncmp(termCommand.l + 1, "cls", 3) == 0 || strncmp(termCommand.l + 1, "clear", 5) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "cls", 3) == 0 || strncmp(termCommand.l + cmdOffset, "clear", 5) == 0) {
 				terminalLines.clear();
-			} else if (strncmp(termCommand.l + 1, "taskkill", 8) == 0) {
+			} else if (strncmp(termCommand.l + cmdOffset, "taskkill", 8) == 0) {
 				for (NetNode& node : netNodes) {
 					node.virus.active = false;
 				}
