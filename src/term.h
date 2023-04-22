@@ -107,6 +107,12 @@ void do_terminal() {
 					}
 				}
 			} else if (strncmp(termCommand.l + 1, "rsh", 3) == 0) {
+				if (isReverseShell) {
+					isReverseShell = false;
+					currentConnectedNode->virus.rshRequested = false;
+					currentConnectedNode = homeNode;
+					editorMode = false;
+				}
 				if (rshConnectQueue.empty()) {
 					write_terminal_line("No pending reverse shell connections!");
 				} else {
@@ -132,7 +138,31 @@ void do_terminal() {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
-					// Fly to server
+					if (currentConnectedNode->virus.active) {
+						write_terminal_line("\tVirus already active on this machine!");
+					} else {
+						std::string name{ termCommand.l + 5 };
+						const char* fileData = nullptr;
+						for (File& file : currentConnectedNode->files) {
+							if (file.name == name) {
+								fileData = file.data.data();
+								break;
+							}
+						}
+						if (!fileData) {
+							write_terminal_line("\tFile not found!");
+						} else {
+							currentConnectedNode->virus = SeagullVirus{};
+							currentConnectedNode->virus.instructionStream = compileProgram(fileData);
+							if (currentConnectedNode->virus.instructionStream.empty()) {
+								write_terminal_line("\tCompile error!");
+							} else {
+								currentConnectedNode->virus.active = true;
+								write_terminal_line("\tProgram activated.");
+							}
+						}
+					}
+
 				}
 			} else if (strncmp(termCommand.l + 1, "quit", 4) == 0) {
 				if (isReverseShell) {
@@ -145,6 +175,11 @@ void do_terminal() {
 				}
 			} else if (strncmp(termCommand.l + 1, "cls", 3) == 0 || strncmp(termCommand.l + 1, "clear", 5) == 0) {
 				terminalLines.clear();
+			} else if (strncmp(termCommand.l + 1, "taskkill", 8) == 0) {
+				for (NetNode& node : netNodes) {
+					node.virus.active = false;
+				}
+				write_terminal_line("\tAll programms terminated.");
 			} else {
 				write_terminal_line("\tCommand not recognized");
 			}
