@@ -293,7 +293,7 @@ int main(void) {
 	currentConnectedNode = homeNode;
 
 	InitAudioDevice();
-	Sound fxWav = LoadSound("resources/soundwav.wav");
+	Sound fxWav = LoadSound("resources/startupSound.mp3");
 	PlaySound(fxWav);
 
 	while (!WindowShouldClose() && !userExit) {
