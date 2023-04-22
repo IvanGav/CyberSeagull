@@ -215,6 +215,8 @@ int main(void) {
 	SetExitKey(0);
 
 	build_network_graph();
+	homeNode = &netNodes[0];
+	currentConnectedNode = homeNode;
 
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
