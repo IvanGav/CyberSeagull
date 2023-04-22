@@ -76,6 +76,7 @@ Texture2D seagullFox;
 Texture2D seagullRecycle;
 Texture2D seagullTerm;
 Texture2D seagullMap;
+Texture2D seagullLeave;
 Texture2D terminalTex;
 Texture2D mapTex;
 Texture2D serverGeneric;
@@ -141,10 +142,12 @@ void do_desktop() {
 	Rectangle foxBox{ 0, 330 * 1 * scale, 256 * scale, 300 * scale };
 	Rectangle termBox{ 0, 330 * 2 * scale, 256 * scale, 300 * scale };
 	Rectangle mapBox{ 260 * 10 * scale, 330 * 4 * scale, 256 * scale, 300 * scale};
+	Rectangle leaveBox{ 260 * 10 * scale, 330 * 1 * scale, 256 * scale, 300 * scale };
 	DrawTextureEx(seagullRecycle, Vector2{recycleBox.x, recycleBox.y}, 0.0F, scale, CheckCollisionPointRec(mousePosition, recycleBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullFox, Vector2{ foxBox.x, foxBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, foxBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	DrawTextureEx(seagullMap, Vector2{ mapBox.x, mapBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, mapBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	DrawTextureEx(seagullLeave, Vector2{ leaveBox.x, leaveBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, leaveBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	if (!termOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, termBox)) {
 		open_terminal();
 		termOpen = true;
@@ -225,6 +228,7 @@ int main(void) {
 	seagullRecycle = LoadTexture("resources/seagullrecycle.png");
 	seagullTerm = LoadTexture("resources/seagullterm.png");
 	seagullMap = LoadTexture("resources/seagullmap.png");
+	seagullLeave = LoadTexture("resources/seagullleave.png");
 	terminalTex = LoadTexture("resources/terminal.png");
 	mapTex = LoadTexture("resources/map.png");
 	serverGeneric = LoadTexture("resources/server.png");
