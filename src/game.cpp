@@ -48,6 +48,11 @@ struct TypingBox {
 	char data[cap + 1];
 };
 
+struct Button {
+	Rectangle rect;
+	uint8_t state; //
+};
+
 Texture2D loginTex;
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 TypingBox loginPass{ Rectangle{ 724 / 2, 590 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
@@ -80,6 +85,8 @@ void update_active_typing_box() {
 	}
 }
 
+#include "context.h"
+
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -92,6 +99,7 @@ void do_login() {
 		} else {
 			activeTypingBox = nullptr;
 		}
+
 	}
 	update_active_typing_box();
 	render_typing_box(loginUser);
@@ -99,14 +107,16 @@ void do_login() {
 	render_active_typing_box_cursor();
 }
 
+void (*currentScreen)(void) = do_login;
+
 int main(void) {
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
 	loginTex = LoadTexture("resources/seagulllogin.png");
 
-	SetTargetFPS(60);
+	InitAudioDevice(); //should we?
 
-	void (*currentScreen)(void) = do_login;
+	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
 		deltaTime = GetFrameTime();
