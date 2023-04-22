@@ -14,6 +14,11 @@ uint32_t termCmdSize;
 TermLine termCommand;
 bool termSelected;
 bool editorMode;
+bool isReverseShell;
+
+std::vector<NetNode*> rshConnectQueue;
+NetNode* currentConnectedNode;
+NetNode* homeNode;
 
 #include "editor.h"
 
@@ -73,23 +78,69 @@ void do_terminal() {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
-
+					std::string name{ termCommand.l + 5 };
+					for (File& file : currentConnectedNode->files) {
+						if (file.name == name) {
+							char* ptr = file.data.data();
+							while (*ptr != '\0') {
+								push_terminal_line();
+								uint32_t size = 0;
+								while (*ptr != '\n' && *ptr != '\0') {
+									if (size < terminalWidth) {
+										terminalLines.back().l[size++] = *ptr;
+									}
+									ptr++;
+								}
+								if (*ptr == '\0') {
+									break;
+								}
+								ptr++;
+							}
+							break;
+						}
+					}
 				}
 			} else if (strncmp(termCommand.l + 1, "ls", 2) == 0) {
-				// ls current server
+				if (currentConnectedNode) {
+					for (File& file : currentConnectedNode->files) {
+						write_terminal_line(file.name.c_str());
+					}
+				}
 			} else if (strncmp(termCommand.l + 1, "rsh", 3) == 0) {
-				// do reverse shell here
+				if (rshConnectQueue.empty()) {
+					write_terminal_line("No pending reverse shell connections!");
+				} else {
+					currentConnectedNode = rshConnectQueue.back();
+					rshConnectQueue.pop_back();
+					isReverseShell = true;
+				}
 			} else if (strncmp(termCommand.l + 1, "vim", 3) == 0) {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
-					open_editor("I\nlike\nducks");
+					std::string name{ termCommand.l + 5 };
+					const char* fileData = "";
+					for (File& file : currentConnectedNode->files) {
+						if (file.name == name) {
+							fileData = file.data.data();
+							break;
+						}
+					}
+					open_editor(name, fileData);
 				}
 			} else if (strncmp(termCommand.l + 1, "fly", 3) == 0) {
 				if (cmdLen <= 4) {
 					write_terminal_line("\tProvide filename argument");
 				} else {
-					
+					// Fly to server
+				}
+			} else if (strncmp(termCommand.l + 1, "quit", 4) == 0) {
+				if (isReverseShell) {
+					isReverseShell = false;
+					currentConnectedNode = homeNode;
+					editorMode = false;
+				} else {
+					write_terminal_line("\tNo reverse shell active");
 				}
 			} else if (strncmp(termCommand.l + 1, "cls", 3) == 0 || strncmp(termCommand.l + 1, "clear", 5) == 0) {
 				terminalLines.clear();
@@ -98,8 +149,7 @@ void do_terminal() {
 			}
 			termCmdSize = 0;
 			termCommand.l[termCmdSize++] = '>';
-			bool rsh = false;
-			if (rsh) {
+			if (isReverseShell) {
 				termCommand.l[termCmdSize++] = '>';
 			}
 			termCommand.l[termCmdSize] = '\0';

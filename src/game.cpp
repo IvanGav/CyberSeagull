@@ -41,6 +41,7 @@ void DrawRectangleNorm(float x, float y, float width, float height, Color color)
 
 float deltaTime;
 Vector2 mousePosition;
+Vector2 deltaMouse;
 
 //holds a screen to render
 void (*currentScreen)(void);
@@ -65,11 +66,19 @@ Texture2D seagullTerm;
 Texture2D seagullMap;
 Texture2D terminalTex;
 Texture2D mapTex;
+Texture2D serverGeneric;
+Texture2D serverHome;
+Texture2D serverIdea;
+Texture2D firewallTex;
+Texture2D firewallDeadTex;
+Texture2D routerTex;
+Texture2D seagullVirus;
 Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 TypingBox loginPass{ Rectangle{ 724 / 2, 592 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 Button loginOK{ Rectangle{ 714 / 2, 718 / 2, 162 / 2, 42 / 2 } };
+Button loginExit{ Rectangle{ 1055 / 2, 719 / 2, 162 / 2, 42 / 2 } };
 
 float activeTypingBlinkTime;
 TypingBox* activeTypingBox;
@@ -107,6 +116,7 @@ void do_desktop();
 bool termOpen;
 bool mapOpen;
 
+#include "network.h"
 #include "context.h"
 #include "term.h"
 #include "map.h"
@@ -139,21 +149,7 @@ void do_desktop() {
 	}
 }
 
-//sample program
-const char* sampleS1 = 
-R"(ADD R0,R2
-hello:
-MOV R1,20
-JMP hello
-world:
-JZE world
-)";
-
-int main() {
-	auto a = compileProgram(sampleS1);
-	return 0;
-}
-
+bool userExit = false;
 //LOGIN SCREEN
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
@@ -174,6 +170,8 @@ void do_login() {
 				currentScreen = do_desktop;
 				activeTypingBox = nullptr;
 			}
+		} else if (CheckCollisionPointRec(mousePosition, loginExit.rect)) {
+			userExit = true;
 		}
 	}
 	update_active_typing_box();
@@ -193,7 +191,7 @@ void do_login() {
 	}
 }
 
-int mains(void) {
+int main(void) {
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
@@ -205,13 +203,25 @@ int mains(void) {
 	seagullMap = LoadTexture("resources/seagullmap.png");
 	terminalTex = LoadTexture("resources/terminal.png");
 	mapTex = LoadTexture("resources/map.png");
+	serverGeneric = LoadTexture("resources/server.png");
+	serverHome = LoadTexture("resources/homeserver.png");
+	serverIdea = LoadTexture("resources/ideaserver.png");
+	firewallTex = LoadTexture("resources/firewall.png");
+	firewallDeadTex = LoadTexture("resources/deadfirewall.png");
+	routerTex = LoadTexture("resources/router.png");
+	seagullVirus = LoadTexture("resources/seagullvirus.png");
 	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
 
 	SetTargetFPS(60);
 	SetExitKey(0);
 
-	while (!WindowShouldClose()) {
+	build_network_graph();
+	homeNode = &netNodes[0];
+	currentConnectedNode = homeNode;
+
+	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
+		deltaMouse = GetMouseDelta();
 		mousePosition = GetMousePosition();
 		activeTypingBlinkTime += deltaTime;
 		BeginDrawing();
