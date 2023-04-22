@@ -12,7 +12,7 @@ enum Instruction {
 };
 
 void interpret_next(SeagullVirus& virus, NetNode* node) {
-	if (!virus.active || virus.rshRequested || virus.instructionPointer >= virus.instructionStream.size()) {
+	if (!virus.active || virus.rshRequested) {
 		return;
 	}
 	if (virus.instructionPointer >= virus.instructionStream.size()) {

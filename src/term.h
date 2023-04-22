@@ -60,7 +60,7 @@ void do_terminal() {
 		return;
 	}
 	if (termSelected) {
-		if (termCmdSize > 1 && IsKeyPressed(KEY_BACKSPACE)) {
+		if (termCmdSize > (isReverseShell ? 2 : 1) && IsKeyPressed(KEY_BACKSPACE)) {
 			termCommand.l[--termCmdSize] = '\0';
 		}
 		char c;
@@ -119,6 +119,7 @@ void do_terminal() {
 					write_terminal_line("No pending reverse shell connections!");
 				} else {
 					currentConnectedNode = rshConnectQueue.back();
+					currentConnectedNode->virus.rshRequested = false;
 					rshConnectQueue.pop_back();
 					isReverseShell = true;
 				}
@@ -165,6 +166,11 @@ void do_terminal() {
 						}
 					}
 
+				}
+			} else if (strncmp(termCommand.l + cmdOffset, "nmap", 4) == 0) {
+				for (PortConnection& con : currentConnectedNode->outboundPorts) {
+					std::string str = std::to_string(con.port);
+					write_terminal_line(str.c_str());
 				}
 			} else if (strncmp(termCommand.l + cmdOffset, "quit", 4) == 0) {
 				if (isReverseShell) {
