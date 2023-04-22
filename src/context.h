@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <iostream>
 
-void drawDesktop() {
+//MAIN DESKTOP SCREEN
+void do_desktop() {
 	DrawText("Hello Desktop", 0, 0, 20, BLACK);
 }

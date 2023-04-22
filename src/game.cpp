@@ -28,6 +28,8 @@
 #pragma comment(lib, "winmm.lib")
 #endif
 
+void do_login();
+
 const int screenWidth = 960;
 const int screenHeight = 540;
 const float screenWidthf = float(screenWidth);
@@ -89,6 +91,7 @@ void update_active_typing_box() {
 void (*currentScreen)(void) = do_login;
 #include "context.h"
 
+//LOGIN SCREEN
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -104,13 +107,15 @@ void do_login() {
 		}
 		//button check
 		if (CheckCollisionPointRec(mousePosition, loginOK.rect)) {
-			currentScreen = do_login;
+			if(strncmp(loginPass.data,"Cgull",5)) //make sure there's a correct password
+				currentScreen = do_desktop;
 		}
 	}
 	update_active_typing_box();
 	render_typing_box(loginUser);
 	render_typing_box(loginPass);
 	render_active_typing_box_cursor();
+	DrawRectangleRec(loginOK.rect,BLACK);
 }
 
 int main(void) {
