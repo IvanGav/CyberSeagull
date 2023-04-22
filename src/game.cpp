@@ -78,6 +78,7 @@ Font font;
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 TypingBox loginPass{ Rectangle{ 724 / 2, 592 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 Button loginOK{ Rectangle{ 714 / 2, 718 / 2, 162 / 2, 42 / 2 } };
+Button loginExit{ Rectangle{ 1055 / 2, 719 / 2, 162 / 2, 42 / 2 } };
 
 float activeTypingBlinkTime;
 TypingBox* activeTypingBox;
@@ -147,6 +148,7 @@ void do_desktop() {
 	}
 }
 
+bool userExit = false;
 //LOGIN SCREEN
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
@@ -167,6 +169,8 @@ void do_login() {
 				currentScreen = do_desktop;
 				activeTypingBox = nullptr;
 			}
+		} else if (CheckCollisionPointRec(mousePosition, loginExit.rect)) {
+			userExit = true;
 		}
 	}
 	update_active_typing_box();
@@ -212,7 +216,7 @@ int main(void) {
 
 	build_network_graph();
 
-	while (!WindowShouldClose()) {
+	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
 		deltaMouse = GetMouseDelta();
 		mousePosition = GetMousePosition();
