@@ -42,6 +42,7 @@ struct NetNode {
 	std::vector<File> files;
 	std::vector<PortConnection> outboundPorts;
 	SeagullVirus virus;
+	bool compromised;
 
 	bool fizzBuzz(int i) {
 		bool val = false;

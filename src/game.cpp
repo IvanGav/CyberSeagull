@@ -44,6 +44,9 @@ float deltaTime;
 Vector2 mousePosition;
 Vector2 deltaMouse;
 
+const float tickrate = 0.2F;
+float tickCountdown;
+
 //holds a screen to render
 void (*currentScreen)(void);
 
@@ -88,6 +91,8 @@ Texture2D routerTex;
 Texture2D seagullVirus;
 Texture2D todoList;
 Texture2D notepad;
+Sound startupSound;
+Sound windowOpenSound;
 Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
@@ -127,6 +132,7 @@ void update_active_typing_box() {
 }
 
 void do_desktop();
+std::vector<uint32_t> compileProgram(const char* code);
 
 bool termOpen;
 bool mapOpen;
@@ -158,10 +164,12 @@ void do_desktop() {
 	DrawTextureEx(notepad, Vector2{ todoListBox.x, todoListBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, todoListBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	if (!termOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, termBox)) {
 		open_terminal();
+		PlaySound(windowOpenSound);
 		termOpen = true;
 	}
 	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, mapBox)) {
 		open_map();
+		PlaySound(windowOpenSound);
 		mapOpen = true;
 	}
 	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, leaveBox)) {
@@ -175,11 +183,13 @@ void do_desktop() {
 	}
 	if ((!todoListFirstOpen) || (!todoListOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, todoListBox))) {
 		open_todoList();
+		PlaySound(windowOpenSound);
 		todoListOpen = true;
 		todoListFirstOpen = true;
 	}
 	if (todoListOpen) {
 		do_todoList();
+		//PlaySound(windowOpenSound);
 	}
 }
 
@@ -244,14 +254,15 @@ ADD R0,R0,R1
 
 int main(void) {
 	// Compiler test
-	SeagullVirus virus{};
+	/*SeagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
 	virus.active = true;
 	NetNode node{ NET_NODE_TYPE_SERVER };
 	while (virus.active) {
 		interpret_next(virus, &node);
 	}
-	return 0;
+	return 0;*/
+	InitAudioDevice();
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
@@ -274,23 +285,41 @@ int main(void) {
 	todoList = LoadTexture("resources/cyberseagtodo.png");
 	notepad = LoadTexture("resources/notepad.png");
 	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
+	startupSound = LoadSound("resources/startupSound.mp3");
+	windowOpenSound = LoadSound("resources/windowOpenSound.mp3");
 
 	SetTargetFPS(60);
 	SetExitKey(0);
 
 	build_network_graph();
 	homeNode = &netNodes[0];
+	homeNode->compromised = true;
 	currentConnectedNode = homeNode;
+	
+	PlaySound(startupSound);
 
-	InitAudioDevice();
-	Sound fxWav = LoadSound("resources/startupSound.mp3");
-	PlaySound(fxWav);
+	tickCountdown = tickrate;
 
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
 		deltaMouse = GetMouseDelta();
 		mousePosition = GetMousePosition();
 		activeTypingBlinkTime += deltaTime;
+
+		tickCountdown -= deltaTime;
+		if (tickCountdown <= 0) {
+			std::vector<NetNode*> toUpdate{};
+			for (NetNode& node : netNodes) {
+				if (node.virus.active) {
+					toUpdate.push_back(&node);
+				}
+			}
+			for (NetNode* node : toUpdate) {
+				interpret_next(node->virus, node);
+			}
+			tickCountdown = tickrate;
+		}
+
 		BeginDrawing();
 		
 		ClearBackground(RAYWHITE);

@@ -15,6 +15,10 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 	if (!virus.active || virus.rshRequested || virus.instructionPointer >= virus.instructionStream.size()) {
 		return;
 	}
+	if (virus.instructionPointer >= virus.instructionStream.size()) {
+		virus.active = false;
+		return;
+	}
 	uint32_t data = virus.instructionStream[virus.instructionPointer++];
 	Instruction op = static_cast<Instruction>(data & 0xFF);
 	data >>= 8;
@@ -40,10 +44,11 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 	case XOR: virus.registerFile[data & 7] = virus.registerFile[(data >> 8) & 7] ^ virus.registerFile[(data >> 16) & 7]; break;
 	case FLY:
 	{
-		uint32_t port = data;
+		uint32_t port = virus.registerFile[data & 7];
 		for (PortConnection& con : node->outboundPorts) {
 			if (con.port == port && !con.dst->virus.active && (node->type != NET_NODE_TYPE_FIREWALL || node->firewallDown == true)) {
 				con.dst->virus = virus;
+				con.dst->compromised = true;
 				node->virus.active = false;
 				break;
 			}
@@ -108,9 +113,6 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 		virus.registerFile[data & 7] = virus.stack[--virus.stackPointer];
 		break;
 	default: virus.active = false; break;
-	}
-	if (virus.instructionPointer >= virus.instructionStream.size()) {
-		virus.active = false;
 	}
 }
 
