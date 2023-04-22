@@ -42,28 +42,28 @@ struct NetNode {
 	std::vector<File> files;
 	std::vector<PortConnection> outboundPorts;
 	SeagullVirus virus;
+
+	bool fizzBuzz(int i) {
+		if (challengeData % 3 && challengeData % 5)
+			return (i == 9);
+		if (challengeData % 3)
+			return (i == 1);
+		if (challengeData % 5)
+			return (i == 8);
+	}
+
+	bool addOne(int i) {
+		return (i == (challengeData + 1));
+	}
+
+	bool search(int i) {
+		return (i == challengeData);
+	}
+
+	bool hex2Dec(int i) {
+		return (i == challengeData);
+	}
 };
-
-bool fizzBuzz(int i) {
-	if (challengeData % 3 && challengeData % 5)
-		return (i == 9);
-	if (challengeData % 3)
-		return (i == 1);
-	if (challengeData % 5)
-		return (i == 8);
-}
-
-bool addOne(int i) {
-	return (i == (challengeData + 1));
-}
-
-bool search(int i) {
-	return (i == challengeData);
-}
-
-bool hex2Dec(int i) {
-	return (i == challengeData);
-}
 
 std::vector<NetNode> netNodes;
 
