@@ -91,6 +91,8 @@ Texture2D routerTex;
 Texture2D seagullVirus;
 Texture2D todoList;
 Texture2D notepad;
+Sound startupSound;
+Sound windowOpenSound;
 Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
@@ -162,10 +164,12 @@ void do_desktop() {
 	DrawTextureEx(notepad, Vector2{ todoListBox.x, todoListBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, todoListBox) ? WHITE : Color{ 220, 220, 220, 255 });
 	if (!termOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, termBox)) {
 		open_terminal();
+		PlaySound(windowOpenSound);
 		termOpen = true;
 	}
 	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, mapBox)) {
 		open_map();
+		PlaySound(windowOpenSound);
 		mapOpen = true;
 	}
 	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, leaveBox)) {
@@ -179,11 +183,13 @@ void do_desktop() {
 	}
 	if ((!todoListFirstOpen) || (!todoListOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, todoListBox))) {
 		open_todoList();
+		PlaySound(windowOpenSound);
 		todoListOpen = true;
 		todoListFirstOpen = true;
 	}
 	if (todoListOpen) {
 		do_todoList();
+		//PlaySound(windowOpenSound);
 	}
 }
 
@@ -267,6 +273,7 @@ int main(void) {
 		interpret_next(virus, &node);
 	}
 	return 0;*/
+	InitAudioDevice();
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
@@ -289,6 +296,8 @@ int main(void) {
 	todoList = LoadTexture("resources/cyberseagtodo.png");
 	notepad = LoadTexture("resources/notepad.png");
 	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
+	startupSound = LoadSound("resources/startupSound.mp3");
+	windowOpenSound = LoadSound("resources/windowOpenSound.mp3");
 
 	SetTargetFPS(60);
 	SetExitKey(0);
@@ -297,10 +306,8 @@ int main(void) {
 	homeNode = &netNodes[0];
 	homeNode->compromised = true;
 	currentConnectedNode = homeNode;
-
-	InitAudioDevice();
-	Sound fxWav = LoadSound("resources/startupSound.mp3");
-	PlaySound(fxWav);
+	
+	PlaySound(startupSound);
 
 	tickCountdown = tickrate;
 
