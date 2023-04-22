@@ -237,32 +237,21 @@ void do_login() {
 //}
 
 const char* compile = R"(
-MoV r0, 10
-MOv R1, 0
-MOV R2, 1
-MOV r3, 1
-start:
-CNE R4,R0,R2
-JZE R4, end
-
-Add R1,R1,R2
-ADd R2,R2,R3
-
-jMP start
-end:
+ADD R0,R0,R1
 RSH
+ADD R0,R0,R1
 )";
 
 int main(void) {
 	// Compiler test
-	/*SeagullVirus virus{};
+	SeagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
 	virus.active = true;
 	NetNode node{ NET_NODE_TYPE_SERVER };
 	while (virus.active) {
 		interpret_next(virus, &node);
 	}
-	return 0;*/
+	return 0;
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));

@@ -150,7 +150,7 @@ int getRegister(const char* start, const char* end) {
 
 //get next token and put into 'buffer'
 const char* nextToken(const char* cur) {
-	while (!(*cur == ' ' || *cur == ':' || *cur == '\0')) {
+	while (!(*cur == ' ' || *cur == ':' || *cur == '\0' || *cur == '\n')) {
 		cur++;
 	}
 	return cur;
@@ -208,8 +208,7 @@ bool readInstruction(int instruction, const char*& cur,
 		compiled.push_back(fullInstruction);
 		skipToNext(cur);
 		return true;
-	}
-	if (instruction == FLY || instruction == NXT || instruction == INN ||
+	} else if (instruction == FLY || instruction == NXT || instruction == INN ||
 		instruction == OUT || instruction == PSH || instruction == POP) {
 		//read 1 reg
 		skipToNext(cur);
@@ -318,7 +317,9 @@ std::vector<uint32_t> compileProgram(const char* code) {
 		} else {
 			cur = next;
 			bool noError = readInstruction(nextInstruction, cur, compiled, labels, uninit_labels);
-			if(!noError) return std::vector<uint32_t>(); //AAAAA
+			if (!noError) {
+				return std::vector<uint32_t>(); //AAAAA
+			}
 		}
 	}
 	for (std::pair<std::string, std::vector<uint32_t>> vec : uninit_labels) {
