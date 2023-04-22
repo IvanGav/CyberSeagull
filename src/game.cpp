@@ -236,14 +236,14 @@ end:
 
 int main(void) {
 	// Compiler test
-	SeagullVirus virus{};
+	/*SeagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
 	virus.active = true;
 	NetNode node{ NET_NODE_TYPE_SERVER };
 	while (virus.active) {
 		interpret_next(virus, &node);
 	}
-	return 0;
+	return 0;*/
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
