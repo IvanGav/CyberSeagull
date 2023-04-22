@@ -237,31 +237,31 @@ void do_login() {
 //}
 
 const char* compile = R"(
-MOV R0, 10
-MOV R1, 0
+MoV r0, 10
+MOv R1, 0
 MOV R2, 1
-MOV R3, 1
+MOV r3, 1
 start:
 CNE R4,R0,R2
 JZE R4, end
 
-ADD R1,R1,R2
-ADD R2,R2,R3
+Add R1,R1,R2
+ADd R2,R2,R3
 
-JMP start
+jMP start
 end:
 )";
 
 int main(void) {
 	// Compiler test
-	SeagullVirus virus{};
+	/*SeagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
 	virus.active = true;
 	NetNode node{ NET_NODE_TYPE_SERVER };
 	while (virus.active) {
 		interpret_next(virus, &node);
 	}
-	return 0;
+	return 0;*/
 	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
@@ -292,9 +292,9 @@ int main(void) {
 	homeNode = &netNodes[0];
 	currentConnectedNode = homeNode;
 
-	InitAudioDevice();
-	Sound fxWav = LoadSound("resources/soundwav.wav");
-	PlaySound(fxWav);
+	//InitAudioDevice();
+	//Sound fxWav = LoadSound("resources/soundwav.wav");
+	//PlaySound(fxWav);
 
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
