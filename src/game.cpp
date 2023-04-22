@@ -40,6 +40,9 @@ void DrawRectangleNorm(float x, float y, float width, float height, Color color)
 float deltaTime;
 Vector2 mousePosition;
 
+//holds a screen to render
+void (*currentScreen)(void);
+
 struct TypingBox {
 	static constexpr uint32_t cap = 31;
 	Rectangle rect;
@@ -53,15 +56,21 @@ struct Button {
 };
 
 Texture2D loginTex;
+Texture2D desktopTex;
+Texture2D seagullFox;
+Texture2D seagullRecycle;
+Texture2D seagullTerm;
+Font font;
+
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
-TypingBox loginPass{ Rectangle{ 724 / 2, 590 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
+TypingBox loginPass{ Rectangle{ 724 / 2, 592 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 Button loginOK{ Rectangle{ 400, 300, 100, 100 } };
 
 float activeTypingBlinkTime;
 TypingBox* activeTypingBox;
 
 void render_typing_box(TypingBox& box) {
-	DrawText(box.data, box.rect.x + 3, box.rect.y + 3, box.rect.height - 5, BLACK);
+	DrawTextEx(font, box.data, Vector2{ box.rect.x + 3, box.rect.y }, box.rect.height, 0, BLACK);
 }
 
 void render_active_typing_box_cursor() {
@@ -69,8 +78,8 @@ void render_active_typing_box_cursor() {
 		return;
 	}
 	if ((uint32_t(activeTypingBlinkTime * 4) & 1) == 0) {
-		int32_t len = MeasureText(activeTypingBox->data, activeTypingBox->rect.height - 5);
-		DrawText("_", activeTypingBox->rect.x + 3 + len, activeTypingBox->rect.y + 3, activeTypingBox->rect.height - 5, BLACK);
+		Vector2 len = MeasureTextEx(font, activeTypingBox->data, activeTypingBox->rect.height, 0);
+		DrawTextEx(font, "_", Vector2{ activeTypingBox->rect.x + 3 + len.x, activeTypingBox->rect.y }, activeTypingBox->rect.height, 0, BLACK);
 	}
 }
 
@@ -85,9 +94,18 @@ void update_active_typing_box() {
 	}
 }
 
-//holds a screen to render
-void (*currentScreen)(void) = do_login;
 #include "context.h"
+
+void do_desktop() {
+	DrawTextureNPatch(desktopTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
+	float scale = 0.25F;
+	Rectangle recycleBox{ 0, 0, 256 * scale, 300 * scale };
+	Rectangle foxBox{ 0, 330 * scale, 256 * scale, 300 * scale };
+	Rectangle termBox{ 0, 660 * scale, 256 * scale, 300 * scale };
+	DrawTextureEx(seagullRecycle, Vector2{recycleBox.x, recycleBox.y}, 0.0F, scale, CheckCollisionPointRec(mousePosition, recycleBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	DrawTextureEx(seagullFox, Vector2{ foxBox.x, foxBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, foxBox) ? WHITE : Color{ 220, 220, 220, 255 });
+	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
+}
 
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
@@ -111,14 +129,22 @@ void do_login() {
 	render_typing_box(loginUser);
 	render_typing_box(loginPass);
 	render_active_typing_box_cursor();
+	if (strncmp(loginPass.data, "Duck", TypingBox::cap) != 0) {
+		currentScreen = do_desktop;
+		activeTypingBox = nullptr;
+	}
 }
 
 int main(void) {
+	currentScreen = do_login;
 	InitWindow(screenWidth, screenHeight, "Cyber Seagull");
 	SetWindowIcon(LoadImage("resources/icon.png"));
 	loginTex = LoadTexture("resources/seagulllogin.png");
-
-	InitAudioDevice(); //should we?
+	desktopTex = LoadTexture("resources/seagulldesktop.png");
+	seagullFox = LoadTexture("resources/seagullfox.png");
+	seagullRecycle = LoadTexture("resources/seagullrecycle.png");
+	seagullTerm = LoadTexture("resources/seagullterm.png");
+	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
 
 	SetTargetFPS(60);
 
