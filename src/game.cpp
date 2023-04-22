@@ -292,6 +292,10 @@ int main(void) {
 	homeNode = &netNodes[0];
 	currentConnectedNode = homeNode;
 
+	InitAudioDevice();
+	Sound fxWav = LoadSound("resources/soundwav.wav");
+	PlaySound(fxWav);
+
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
 		deltaMouse = GetMouseDelta();
