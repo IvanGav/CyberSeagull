@@ -44,6 +44,9 @@ float deltaTime;
 Vector2 mousePosition;
 Vector2 deltaMouse;
 
+const float tickrate = 0.2F;
+float tickCountdown;
+
 //holds a screen to render
 void (*currentScreen)(void);
 
@@ -129,6 +132,7 @@ void update_active_typing_box() {
 }
 
 void do_desktop();
+std::vector<uint32_t> compileProgram(const char* code);
 
 bool termOpen;
 bool mapOpen;
@@ -256,6 +260,7 @@ ADd R2,R2,R3
 
 jMP start
 end:
+RSH
 )";
 
 int main(void) {
@@ -299,15 +304,33 @@ int main(void) {
 
 	build_network_graph();
 	homeNode = &netNodes[0];
+	homeNode->compromised = true;
 	currentConnectedNode = homeNode;
 	
 	PlaySound(startupSound);
+
+	tickCountdown = tickrate;
 
 	while (!WindowShouldClose() && !userExit) {
 		deltaTime = GetFrameTime();
 		deltaMouse = GetMouseDelta();
 		mousePosition = GetMousePosition();
 		activeTypingBlinkTime += deltaTime;
+
+		tickCountdown -= deltaTime;
+		if (tickCountdown <= 0) {
+			std::vector<NetNode*> toUpdate{};
+			for (NetNode& node : netNodes) {
+				if (node.virus.active) {
+					toUpdate.push_back(&node);
+				}
+			}
+			for (NetNode* node : toUpdate) {
+				interpret_next(node->virus, node);
+			}
+			tickCountdown = tickrate;
+		}
+
 		BeginDrawing();
 		
 		ClearBackground(RAYWHITE);

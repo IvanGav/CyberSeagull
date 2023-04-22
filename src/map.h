@@ -16,7 +16,7 @@ void render_nodes() {
 	float halfheight = 50.0F;
 	for (const NetNode& node : netNodes) {
 		for (const PortConnection& con : node.outboundPorts) {
-			DrawLineEx(Vector2{ node.x * mapScale + mapX, node.y * mapScale + mapY }, Vector2{ con.dst->x * mapScale + mapX, con.dst->y * mapScale + mapY }, 5.0F, RED);
+			DrawLineEx(Vector2{ node.x * mapScale + mapX, node.y * mapScale + mapY }, Vector2{ con.dst->x * mapScale + mapX, con.dst->y * mapScale + mapY }, 5.0F, con.dst->compromised ? GREEN : RED);
 		}
 	}
 	for (const NetNode& node : netNodes) {
@@ -29,6 +29,9 @@ void render_nodes() {
 		case NET_NODE_TYPE_FIREWALL: texture = node.firewallDown ? firewallDeadTex : firewallTex; break;
 		}
 		DrawTextureNPatch(texture, NPatchInfo{ Rectangle{ 0, 0, float(texture.width), float(texture.height) } }, Rectangle{ (node.x - halfwidth) * mapScale + mapX, (node.y - halfheight) * mapScale + mapY, (halfwidth * 2) * mapScale, (halfheight * 2) * mapScale }, Vector2{}, 0.0F, WHITE);
+		if (node.virus.active) {
+			DrawTextureNPatch(seagullVirus, NPatchInfo{ Rectangle{ 0, 0, float(seagullVirus.width), float(seagullVirus.height) } }, Rectangle{ (node.x - halfwidth) * mapScale + mapX + 4, (node.y - halfheight) * mapScale + mapY - 4, (halfwidth * 2) * mapScale, (halfheight * 2) * mapScale }, Vector2{}, 0.0F, WHITE);
+		}
 	}
 }
 
