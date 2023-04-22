@@ -137,6 +137,7 @@ void do_terminal() {
 			} else if (strncmp(termCommand.l + 1, "quit", 4) == 0) {
 				if (isReverseShell) {
 					isReverseShell = false;
+					currentConnectedNode->virus.rshRequested = false;
 					currentConnectedNode = homeNode;
 					editorMode = false;
 				} else {

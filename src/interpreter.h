@@ -12,7 +12,7 @@ enum Instruction {
 };
 
 void interpret_next(SeagullVirus& virus, NetNode* node) {
-	if (!virus.active || virus.rshRequested) {
+	if (!virus.active || virus.rshRequested || virus.instructionPointer >= virus.instructionStream.size()) {
 		return;
 	}
 	uint32_t data = virus.instructionStream[virus.instructionPointer++];
@@ -68,10 +68,10 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 			break;
 		}
 		switch (node->challengeType) {
-		case FIREWALL_CHALLENGE_ADD_ONE:
-		case FIREWALL_CHALLENGE_FIZZBUZZ:
-		case FIREWALL_CHALLENGE_NODE_SEARCH:
-		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC:
+		case FIREWALL_CHALLENGE_ADD_ONE: virus.registerFile[data & 7] = node->challengeData; break;
+		case FIREWALL_CHALLENGE_FIZZBUZZ: virus.registerFile[data & 7] = 100; node->challengeData = 0; break;
+		case FIREWALL_CHALLENGE_NODE_SEARCH: break;
+		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC: break;
 		}
 		break;
 	case OUT:
@@ -79,10 +79,18 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 			break;
 		}
 		switch (node->challengeType) {
-		case FIREWALL_CHALLENGE_ADD_ONE:
-		case FIREWALL_CHALLENGE_FIZZBUZZ:
-		case FIREWALL_CHALLENGE_NODE_SEARCH:
-		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC:
+		case FIREWALL_CHALLENGE_ADD_ONE: node->firewallDown |= node->addOne(virus.registerFile[data & 7]); break;
+		case FIREWALL_CHALLENGE_FIZZBUZZ: 
+			if (node->fizzBuzz(virus.registerFile[data & 7])) {
+				if (node->challengeData == 100) {
+					node->firewallDown = true;
+				}
+			} else {
+				node->challengeData = 0;
+			}
+			break;
+		case FIREWALL_CHALLENGE_NODE_SEARCH: node->firewallDown |= node->search(virus.registerFile[data & 7]); break;
+		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC: node->firewallDown |= node->hex2Dec(virus.registerFile[data & 7]); break;
 		}
 		break;
 	case PSH:
@@ -198,7 +206,7 @@ bool readInstruction(int instruction, const char*& cur,
 	uint32_t fullInstruction = instruction; //a "full" instruction with instruction, registers, etc
 	if (instruction == RSH) {
 		compiled.push_back(instruction);
-		return;
+		return true;
 	}
 	if (instruction == FLY || instruction == NXT || instruction == INN ||
 		instruction == OUT || instruction == PSH || instruction == POP) {
@@ -259,7 +267,7 @@ bool readInstruction(int instruction, const char*& cur,
 		uint32_t im = std::stoi(numStr);
 		compiled.push_back(fullInstruction);
 		compiled.push_back(im);
-		return;
+		return true;
 	} else {
 		//push a register, but 3 times
 		skipToNext(cur);
