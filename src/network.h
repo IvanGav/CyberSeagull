@@ -106,6 +106,10 @@ void build_network_graph() {
 	netNodes.push_back({ NET_NODE_TYPE_SERVER, 1800, 0 });
 	netNodes.push_back({ NET_NODE_TYPE_IDEA_SERVER, 2000, 0 });
 
+	
+	add_network_file(1, "README", "Man, as an IT guy, remembering how to get past these \nfirewalls is hard, good thing I made this file \nto remind me that I just have to add one.");
+	add_network_file(3, "README", "My memory is so bad, this next one has to do with \nmultiples, printing 1, 8, and 9");
+	add_network_file(4, "README", "I'll write the factors in here for more security, \nevery multiple of 3 returns 1, multiple of 5 returns 8, \nand both returns 9!");
 	add_network_file(0, "ShCommands", "vim <file>\nls\ncat <file>\nfly <file> - lauch a seagull\nnmap - list all connections\ntaskkill - kill all seagulls\nrsh - remote shell");
 	add_network_file(0, "README", "If I want to get to the idea server in any\n reasonable time, I need to start now. Luckily,\n there's a server nearby unprotected by a firewall.");
 	add_network_file(1, "README", "password");
