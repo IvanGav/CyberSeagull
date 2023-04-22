@@ -203,11 +203,6 @@ void do_login() {
 	}
 }
 
-const char* compile = R"(
-mov r0, 400
-mov r5
-)";
-
 int main(void) {
 	SeagullVirus virus{};
 	virus.instructionStream = compileProgram(compile);
