@@ -157,7 +157,7 @@ void do_desktop() {
 		open_map();
 		mapOpen = true;
 	}
-	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, leaveBox)) {
+	if (!mapOpen && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, leaveBox)) {
 		userExit = true;
 	}
 	if (termOpen) {
