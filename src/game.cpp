@@ -125,18 +125,16 @@ void do_login() {
 		}
 		//button check
 		if (CheckCollisionPointRec(mousePosition, loginOK.rect)) {
-			if(strncmp(loginPass.data,"Cgull",5) == 0) //make sure there's a correct password
+			if (strncmp(loginPass.data, "Cgull", TypingBox::cap) == 0 && strncmp(loginUser.data, "", 1)) {
 				currentScreen = do_desktop;
+				activeTypingBox = nullptr;
+			}
 		}
 	}
 	update_active_typing_box();
 	render_typing_box(loginUser);
 	render_typing_box(loginPass);
 	render_active_typing_box_cursor();
-	if (strncmp(loginPass.data, "Duck", TypingBox::cap) != 0) {
-		currentScreen = do_desktop;
-		activeTypingBox = nullptr;
-	}
 }
 
 int main(void) {
