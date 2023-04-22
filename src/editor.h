@@ -1,5 +1,6 @@
 #pragma once
 
+
 std::vector<TermLine> fileLines;
 
 std::string editorFileName;
