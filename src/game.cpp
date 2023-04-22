@@ -28,6 +28,8 @@
 #pragma comment(lib, "winmm.lib")
 #endif
 
+void do_login();
+
 const int screenWidth = 960;
 const int screenHeight = 540;
 const float screenWidthf = float(screenWidth);
@@ -64,7 +66,7 @@ Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
 TypingBox loginPass{ Rectangle{ 724 / 2, 592 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
-Button loginOK{ Rectangle{ 400, 300, 100, 100 } };
+Button loginOK{ Rectangle{ 714 / 2, 718 / 2, 162 / 2, 42 / 2 } };
 
 float activeTypingBlinkTime;
 TypingBox* activeTypingBox;
@@ -107,6 +109,7 @@ void do_desktop() {
 	DrawTextureEx(seagullTerm, Vector2{ termBox.x, termBox.y }, 0.0F, scale, CheckCollisionPointRec(mousePosition, termBox) ? WHITE : Color{ 220, 220, 220, 255 });
 }
 
+//LOGIN SCREEN
 void do_login() {
 	DrawTextureNPatch(loginTex, NPatchInfo{ Rectangle{0,0,1920,1080} }, Rectangle{ 0, 0, screenWidth, screenHeight }, Vector2{}, 0.0F, WHITE);
 	if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -122,7 +125,8 @@ void do_login() {
 		}
 		//button check
 		if (CheckCollisionPointRec(mousePosition, loginOK.rect)) {
-			currentScreen = do_login;
+			if(strncmp(loginPass.data,"Cgull",5) == 0) //make sure there's a correct password
+				currentScreen = do_desktop;
 		}
 	}
 	update_active_typing_box();
