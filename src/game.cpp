@@ -41,6 +41,7 @@ void DrawRectangleNorm(float x, float y, float width, float height, Color color)
 
 float deltaTime;
 Vector2 mousePosition;
+Vector2 deltaMouse;
 
 //holds a screen to render
 void (*currentScreen)(void);
@@ -65,6 +66,13 @@ Texture2D seagullTerm;
 Texture2D seagullMap;
 Texture2D terminalTex;
 Texture2D mapTex;
+Texture2D serverGeneric;
+Texture2D serverHome;
+Texture2D serverIdea;
+Texture2D firewallTex;
+Texture2D firewallDeadTex;
+Texture2D routerTex;
+Texture2D seagullVirus;
 Font font;
 
 TypingBox loginUser{ Rectangle{ 724 / 2, 536 / 2, 504 / 2, 34 / 2 }, TypingBox::cap };
@@ -107,6 +115,7 @@ void do_desktop();
 bool termOpen;
 bool mapOpen;
 
+#include "network.h"
 #include "context.h"
 #include "term.h"
 #include "map.h"
@@ -189,13 +198,23 @@ int main(void) {
 	seagullMap = LoadTexture("resources/seagullmap.png");
 	terminalTex = LoadTexture("resources/terminal.png");
 	mapTex = LoadTexture("resources/map.png");
+	serverGeneric = LoadTexture("resources/server.png");
+	serverHome = LoadTexture("resources/homeserver.png");
+	serverIdea = LoadTexture("resources/ideaserver.png");
+	firewallTex = LoadTexture("resources/firewall.png");
+	firewallDeadTex = LoadTexture("resources/deadfirewall.png");
+	routerTex = LoadTexture("resources/router.png");
+	seagullVirus = LoadTexture("resources/seagullvirus.png");
 	font = LoadFont("resources/JetBrainsMonoNL-SemiBold.ttf");
 
 	SetTargetFPS(60);
 	SetExitKey(0);
 
+	build_network_graph();
+
 	while (!WindowShouldClose()) {
 		deltaTime = GetFrameTime();
+		deltaMouse = GetMouseDelta();
 		mousePosition = GetMousePosition();
 		activeTypingBlinkTime += deltaTime;
 		BeginDrawing();
