@@ -74,7 +74,7 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 		}
 		switch (node->challengeType) {
 		case FIREWALL_CHALLENGE_ADD_ONE: virus.registerFile[data & 7] = node->challengeData; break;
-		case FIREWALL_CHALLENGE_FIZZBUZZ: virus.registerFile[data & 7] = 100; node->challengeData = 0; break;
+		case FIREWALL_CHALLENGE_FIZZBUZZ: virus.registerFile[data & 7] = 12; node->challengeData = 0; break;
 		case FIREWALL_CHALLENGE_NODE_SEARCH: break;
 		case FIREWALL_CHALLENGE_NODE_AND_HEX2DEC: break;
 		}
@@ -87,7 +87,7 @@ void interpret_next(SeagullVirus& virus, NetNode* node) {
 		case FIREWALL_CHALLENGE_ADD_ONE: node->firewallDown |= node->addOne(virus.registerFile[data & 7]); break;
 		case FIREWALL_CHALLENGE_FIZZBUZZ: 
 			if (node->fizzBuzz(virus.registerFile[data & 7])) {
-				if (node->challengeData == 100) {
+				if (node->challengeData == 12) {
 					node->firewallDown = true;
 				}
 			} else {

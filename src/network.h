@@ -46,11 +46,11 @@ struct NetNode {
 
 	bool fizzBuzz(int i) {
 		bool val = false;
-		if (challengeData % 3 && challengeData % 5)
+		if (challengeData % 3 == 0 && challengeData % 5 == 0)
 			val = (i == 9);
-		else if (challengeData % 3)
+		else if (challengeData % 3 == 0)
 			val = (i == 1);
-		else if (challengeData % 5)
+		else if (challengeData % 5 == 0)
 			val = (i == 8);
 		else
 			val = (i == challengeData);
